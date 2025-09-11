@@ -32,7 +32,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-700 via-purple-800 to-cyan-500">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-yellow-700 to-pink-500">
       <form onSubmit={handleSubmit} className="bg-white p-10 rounded-2xl shadow-xl w-96">
         <h2 className="text-2xl font-extrabold mb-6 text-center text-blue-700">Change Password</h2>
         
