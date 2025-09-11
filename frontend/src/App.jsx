@@ -5,7 +5,8 @@ import AdminLogin from './pages/AdminLogin';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import CreateUser from './pages/CreateUser';   // ✅ Import CreateUser
+import CreateUser from './pages/CreateUser';
+import ForgotPassword from './pages/ForgotPassword'; // ✅ Import ForgotPassword
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Protects normal user routes
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} /> {/* ✅ New Route */}
 
           {/* Protected user route */}
           <Route
