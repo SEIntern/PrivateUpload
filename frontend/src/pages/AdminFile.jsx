@@ -6,33 +6,27 @@ function isImage(filename) {
   return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(filename);
 }
 
-export default function FileDownloadModal({ file, token, onClose }) {
+export default function AdminFile({ file, token, onClose }) {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
   const [previewUrl, setPreviewUrl] = useState(null);
   const [previewing, setPreviewing] = useState(false);
 
-  // ✅ Updated: Get key from API if available (admin), else from localStorage (user)
-  const getKey = () => {
-    if (file.encryptionKey) return file.encryptionKey; 
-    return localStorage.getItem('encryption_key');
-  };
+    // console.log("🔑 Admin file encryption key:", file);
 
   const handlePreview = async () => {
     setPreviewing(true);
     setError('');
     try {
-      const { data } = await axios.get(
-        `http://localhost:5000/api/files/${file._id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      
+        
 
-      const response = await fetch(data.url);
+      const response = await fetch(file.url);
       const encrypted = await response.arrayBuffer();
-      const key = getKey();
+      const key = file.encryptionKey;
       if (!key) throw new Error('No encryption key found');
 
-      const iv = CryptoJS.enc.Hex.parse(data.iv);
+      const iv = CryptoJS.enc.Hex.parse(file.iv);
 
       function arrayBufferToBase64(buffer) {
         let binary = '';
@@ -104,64 +98,61 @@ export default function FileDownloadModal({ file, token, onClose }) {
   };
 
   const handleDownload = async () => {
-    setDownloading(true);
-    setError('');
-    try {
-      const { data } = await axios.get(
-        `http://localhost:5000/api/files/${file._id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  setDownloading(true);
+  setError('');
+  try {
+    const response = await fetch(file.url);
+    const encrypted = await response.arrayBuffer();
+    const key = file.encryptionKey;
+    if (!key) throw new Error('No encryption key found');
 
-      const response = await fetch(data.url);
-      const encrypted = await response.arrayBuffer();
-      const key = getKey();
-      if (!key) throw new Error('No encryption key found');
+    const iv = CryptoJS.enc.Hex.parse(file.iv);
 
-      const iv = CryptoJS.enc.Hex.parse(data.iv);
-
-      function arrayBufferToBase64(buffer) {
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        return window.btoa(binary);
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
       }
-
-      const encryptedBase64 = arrayBufferToBase64(encrypted);
-      const decrypted = CryptoJS.AES.decrypt(
-        { ciphertext: CryptoJS.enc.Base64.parse(encryptedBase64) },
-        CryptoJS.enc.Hex.parse(key),
-        { iv }
-      );
-
-      function wordArrayToUint8Array(wordArray) {
-        const words = wordArray.words;
-        const sigBytes = wordArray.sigBytes;
-        const u8 = new Uint8Array(sigBytes);
-        for (let i = 0; i < sigBytes; ++i) {
-          u8[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
-        }
-        return u8;
-      }
-
-      const typedArray = wordArrayToUint8Array(decrypted);
-      const blob = new Blob([typedArray], { type: 'application/octet-stream' });
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = data.original_filename;
-      a.click();
-      window.URL.revokeObjectURL(url);
-
-      setDownloading(false);
-      onClose();
-    } catch (err) {
-      setError('Failed to decrypt or download file');
-      setDownloading(false);
+      return window.btoa(binary);
     }
-  };
+
+    const encryptedBase64 = arrayBufferToBase64(encrypted);
+    const decrypted = CryptoJS.AES.decrypt(
+      { ciphertext: CryptoJS.enc.Base64.parse(encryptedBase64) },
+      CryptoJS.enc.Hex.parse(key),
+      { iv }
+    );
+
+    function wordArrayToUint8Array(wordArray) {
+      const words = wordArray.words;
+      const sigBytes = wordArray.sigBytes;
+      const u8 = new Uint8Array(sigBytes);
+      for (let i = 0; i < sigBytes; ++i) {
+        u8[i] = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+      }
+      return u8;
+    }
+
+    const typedArray = wordArrayToUint8Array(decrypted);
+    const blob = new Blob([typedArray], { type: 'application/octet-stream' });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.original_filename; // 👈 use filename from admin response
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    setDownloading(false);
+    onClose();
+  } catch (err) {
+    setError('Failed to decrypt or download file: ' + (err.message || err));
+    setDownloading(false);
+    console.error('[Download] Error:', err);
+  }
+};
+
 
   React.useEffect(() => {
     return () => {
@@ -226,3 +217,5 @@ export default function FileDownloadModal({ file, token, onClose }) {
     </div>
   );
 }
+
+
