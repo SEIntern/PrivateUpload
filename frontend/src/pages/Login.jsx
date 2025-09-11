@@ -23,7 +23,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-700 via-purple-800 to-cyan-500">
       <form onSubmit={handleSubmit} className="bg-white p-10 rounded-2xl shadow-xl w-96">
         <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700">Sign In</h2>
         {error && <div className="mb-4 text-red-500 text-center font-semibold">{error}</div>}
