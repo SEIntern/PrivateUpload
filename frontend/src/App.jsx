@@ -10,6 +10,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import PasswordChange from './pages/PasswordChange';
 import ManagerDashboard from './pages/ManagerDashboard';
+import PendingRequests from './pages/PendingRequests';
 
 
 // Protects normal user routes
@@ -76,6 +77,16 @@ export default function App() {
                 <CreateUser />
               </AdminPrivateRoute>
             }
+            
+          />
+          <Route
+            path="/pending-requests"
+            element={
+              <AdminPrivateRoute>
+                <PendingRequests />
+              </AdminPrivateRoute>
+            }
+            
           />
           {/* Protected manager route */}
           <Route

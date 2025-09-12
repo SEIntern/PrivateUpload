@@ -6,8 +6,9 @@ export default function CreateUser() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
+  const [managerEmail, setManagerEmail] = useState(""); // 🔹 New state
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false); // 🔹 NEW state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const token = localStorage.getItem("admin_token");
@@ -15,20 +16,20 @@ export default function CreateUser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
-    setLoading(true); // 🔹 Start loading
+    setLoading(true);
 
     try {
       await axios.post(
         "http://localhost:5000/api/auth/admin/create-user",
-        { email, password, role },
+        { email, password, role, managerEmail },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setMessage("✅ User created & credentials sent via email!");
       setEmail("");
       setPassword("");
+      setManagerEmail("");
 
-      // go back to dashboard after short delay
       setTimeout(() => navigate("/admin-dashboard"), 1000);
     } catch (err) {
       console.error("Error creating user:", err.response?.data || err.message);
@@ -36,7 +37,7 @@ export default function CreateUser() {
         `❌ ${err.response?.data?.message || "Failed to create user"}`
       );
     } finally {
-      setLoading(false); // 🔹 Stop loading
+      setLoading(false);
     }
   };
 
@@ -92,10 +93,25 @@ export default function CreateUser() {
             </select>
           </div>
 
+          {/* Manager Email (only if user role = employee) */}
+          {role === "user" && (
+            <div>
+              <label className="block text-gray-700 font-semibold mb-1">
+                Manager Email
+              </label>
+              <input
+                type="email"
+                value={managerEmail}
+                onChange={(e) => setManagerEmail(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+            </div>
+          )}
+
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading} // 🔹 Prevent multiple clicks
+            disabled={loading}
             className={`w-full py-2 rounded-lg font-semibold shadow transition transform ${
               loading
                 ? "bg-indigo-400 cursor-not-allowed"

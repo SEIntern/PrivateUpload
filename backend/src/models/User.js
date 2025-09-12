@@ -8,6 +8,16 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'manager'],
     default: 'user',
   },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending', 
+  },
+  managerEmail: {
+    type: String,
+    default: null,   
+  },
+  createdAt: { type: Date, default: Date.now },
 });
 
 export default mongoose.model('User', userSchema);
