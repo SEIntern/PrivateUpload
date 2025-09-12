@@ -3,12 +3,15 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import FileUploadModal from './FileUploadModal';
 import FileList from './FileList';
+import { useNavigate } from 'react-router-dom';
+
+
 
 export default function Dashboard() {
   const { user, logout, token } = useAuth();
   const [files, setFiles] = useState([]);
   const [showModal, setShowModal] = useState(false);
-
+  const navigate = useNavigate();
   const fetchFiles = async () => {
     try {
       const res = await axios.get('http://localhost:5000/api/files', {
@@ -31,6 +34,7 @@ export default function Dashboard() {
         <div className="font-extrabold text-2xl text-blue-400 tracking-tight">Private File Upload</div>
         <div className="flex items-center gap-4">
           <span className="text-zinc-200 font-medium">{user?.email}</span>
+          <button onClick={() => navigate("/changepassword")} className="bg-blue-500 text-white px-5 py-2 rounded-lg font-semibold shadow hover:bg-blue-600 transition">Change Password</button>
           <button onClick={logout} className="bg-red-500 text-white px-5 py-2 rounded-lg font-semibold shadow hover:bg-red-600 transition">Logout</button>
         </div>
       </header>

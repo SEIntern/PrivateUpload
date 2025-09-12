@@ -6,8 +6,11 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateUser from './pages/CreateUser';
-import ForgotPassword from './pages/ForgotPassword'; // ✅ Import ForgotPassword
+import ForgotPassword from './pages/ForgotPassword';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import PasswordChange from './pages/PasswordChange';
+import ManagerDashboard from './pages/ManagerDashboard';
+
 
 // Protects normal user routes
 function PrivateRoute({ children }) {
@@ -16,7 +19,13 @@ function PrivateRoute({ children }) {
   return user ? children : <Navigate to="/login" />;
 }
 
-// Protects admin routes
+function ManagerPrivateRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user?.role === "manager" ? children : <Navigate to="/dashboard" />;
+}
+
+
 function AdminPrivateRoute({ children }) {
   const adminToken = localStorage.getItem("admin_token");
   return adminToken ? children : <Navigate to="/admin-login" />;
@@ -43,6 +52,14 @@ export default function App() {
             }
           />
 
+          <Route
+            path="/changepassword"
+            element={
+              <PrivateRoute>
+                <PasswordChange />
+              </PrivateRoute>
+            } />
+
           {/* Protected admin routes */}
           <Route
             path="/admin-dashboard"
@@ -60,6 +77,17 @@ export default function App() {
               </AdminPrivateRoute>
             }
           />
+          {/* Protected manager route */}
+          <Route
+            path="/manager-dashboard"
+            element={
+              <PrivateRoute>
+                <ManagerDashboard />   {/* your manager dashboard page */}
+              </PrivateRoute>
+            }
+          />
+
+
 
           {/* Redirect all unknown routes */}
           <Route path="*" element={<Navigate to="/dashboard" />} />

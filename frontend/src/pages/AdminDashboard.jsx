@@ -6,6 +6,7 @@ import Adminfile from "./Adminfile";
 export default function AdminDashboard() {
   const [token] = useState(localStorage.getItem("admin_token") || "");
   const [users, setUsers] = useState([]);
+  const [managers, setManagers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,10 @@ export default function AdminDashboard() {
       const res = await axios.get("http://localhost:5000/api/files/admin/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUsers(res.data);
+
+      // Separate managers and normal users
+      setManagers(res.data.filter((u) => u.role === "manager"));
+      setUsers(res.data.filter((u) => u.role === "user"));
     } catch (err) {
       console.error("❌ Error fetching users:", err.response?.data || err.message);
     }
@@ -54,6 +58,7 @@ export default function AdminDashboard() {
 
   const handleUserClick = (user) => {
     setSelectedUser(user);
+    setFiles([]);
     fetchFiles(user._id);
   };
 
@@ -84,24 +89,53 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-3 gap-6">
-        {/* Users List */}
+        {/* Users & Managers List */}
         <div className="col-span-1 bg-white/90 shadow-2xl rounded-2xl p-6 backdrop-blur">
-          <h2 className="text-xl font-bold mb-4 text-purple-700">Users</h2>
-          <ul>
-            {users.map((user) => (
-              <li
-                key={user._id}
-                onClick={() => handleUserClick(user)}
-                className={`p-3 mb-2 rounded-lg cursor-pointer transition font-medium ${
-                  selectedUser?._id === user._id
-                    ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
-                    : "hover:bg-purple-100 text-gray-700"
-                }`}
-              >
-                {user.email}
-              </li>
-            ))}
-          </ul>
+          <h2 className="text-xl font-bold mb-4 text-purple-700">Accounts</h2>
+
+          {/* Managers Dropdown */}
+          <details className="mb-4">
+            <summary className="cursor-pointer font-semibold text-indigo-600">
+              Managers
+            </summary>
+            <ul className="mt-2">
+              {managers.map((manager) => (
+                <li
+                  key={manager._id}
+                  onClick={() => handleUserClick(manager)}
+                  className={`p-3 mb-2 rounded-lg cursor-pointer transition font-medium ${
+                    selectedUser?._id === manager._id
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
+                      : "hover:bg-purple-100 text-gray-700"
+                  }`}
+                >
+                  {manager.email}
+                </li>
+              ))}
+            </ul>
+          </details>
+
+          {/* Users Dropdown */}
+          <details>
+            <summary className="cursor-pointer font-semibold text-indigo-600">
+              Users
+            </summary>
+            <ul className="mt-2">
+              {users.map((user) => (
+                <li
+                  key={user._id}
+                  onClick={() => handleUserClick(user)}
+                  className={`p-3 mb-2 rounded-lg cursor-pointer transition font-medium ${
+                    selectedUser?._id === user._id
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
+                      : "hover:bg-purple-100 text-gray-700"
+                  }`}
+                >
+                  {user.email}
+                </li>
+              ))}
+            </ul>
+          </details>
         </div>
 
         {/* User Files */}
@@ -152,9 +186,7 @@ export default function AdminDashboard() {
               )}
             </>
           ) : (
-            <p className="text-purple-700">
-              Select a user to view their files.
-            </p>
+            <p className="text-purple-700">Select a user to view their files.</p>
           )}
         </div>
       </div>

@@ -5,7 +5,9 @@ import { useNavigate } from "react-router-dom";
 export default function CreateUser() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false); // 🔹 NEW state
   const navigate = useNavigate();
 
   const token = localStorage.getItem("admin_token");
@@ -13,11 +15,12 @@ export default function CreateUser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
+    setLoading(true); // 🔹 Start loading
 
     try {
       await axios.post(
         "http://localhost:5000/api/auth/admin/create-user",
-        { email, password },
+        { email, password, role },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -25,13 +28,15 @@ export default function CreateUser() {
       setEmail("");
       setPassword("");
 
-      // go back to dashboard after 2s
-      setTimeout(() => navigate("/admin-dashboard"), 2000);
+      // go back to dashboard after short delay
+      setTimeout(() => navigate("/admin-dashboard"), 1000);
     } catch (err) {
       console.error("Error creating user:", err.response?.data || err.message);
       setMessage(
         `❌ ${err.response?.data?.message || "Failed to create user"}`
       );
+    } finally {
+      setLoading(false); // 🔹 Stop loading
     }
   };
 
@@ -71,12 +76,33 @@ export default function CreateUser() {
             />
           </div>
 
+          {/* Role */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Role
+            </label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              required
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="manager">Manager</option>
+              <option value="user">Employee</option>
+            </select>
+          </div>
+
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold shadow transition transform hover:scale-105"
+            disabled={loading} // 🔹 Prevent multiple clicks
+            className={`w-full py-2 rounded-lg font-semibold shadow transition transform ${
+              loading
+                ? "bg-indigo-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-105"
+            }`}
           >
-            Create User
+            {loading ? "Creating..." : "Create User"}
           </button>
         </form>
 

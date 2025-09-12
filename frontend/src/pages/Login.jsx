@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -15,8 +16,19 @@ export default function Login() {
     setError('');
     try {
       const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      
+      // Save token in context
       login(res.data.token);
-      navigate('/dashboard');
+
+      // Decode token to check role
+      const decoded = jwtDecode(res.data.token);
+      console.log(decoded);
+      if (decoded.role === "manager") {
+        navigate('/manager-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     }
@@ -26,9 +38,9 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-yellow-700 to-pink-500">
       <form onSubmit={handleSubmit} className="bg-white p-10 rounded-2xl shadow-xl w-96">
         <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700">Sign In</h2>
-        
+
         {error && <div className="mb-4 text-red-500 text-center font-semibold">{error}</div>}
-        
+
         <input
           type="email"
           placeholder="Email"
@@ -37,7 +49,7 @@ export default function Login() {
           className="w-full mb-4 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           required
         />
-        
+
         <input
           type="password"
           placeholder="Password"
@@ -68,7 +80,6 @@ export default function Login() {
           </Link>
           <br />
           <span className="block mt-2">
-            Are you an admin?{' '}
             <Link to="/admin-login" className="text-red-600 hover:underline font-semibold">
               Admin Login
             </Link>

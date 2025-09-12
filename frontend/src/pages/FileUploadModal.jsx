@@ -52,10 +52,21 @@ export default function FileUploadModal({ onClose, token }) {
       };
       reader.readAsArrayBuffer(file);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Upload error:", err);
+
+      if (err.response) {
+        console.error("📥 Server responded with:", err.response.data);
+        console.error("🔢 Status code:", err.response.status);
+      } else if (err.request) {
+        console.error("📡 No response received. Request was:", err.request);
+      } else {
+        console.error("⚙️ Error setting up request:", err.message);
+      }
+
       setError('Upload failed');
       setUploading(false);
     }
+
   };
 
   return (

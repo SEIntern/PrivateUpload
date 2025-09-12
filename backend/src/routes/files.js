@@ -2,9 +2,9 @@ import express from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import File from '../models/File.js';
-import User from '../models/User.js';   // ✅ import User model
+import User from '../models/User.js';   
 import auth from '../middleware/auth.js';
-import adminOnly from '../middleware/adminOnly.js'; // ✅ admin middleware
+import adminOnly from '../middleware/adminOnly.js';
 import dotenv from 'dotenv';
 import AdminKey from "../models/AdminKey.js";
 dotenv.config();
@@ -19,6 +19,10 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Upload encrypted file
+router.post("/test", (req, res) => {
+  console.log("✅ Test route hit");
+  res.json({ message: "Test route working" });
+});
 
 
 router.post('/upload', auth, upload.single('file'), async (req, res) => {
@@ -27,7 +31,7 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
   try {
     const base64String = buffer.toString();
     const encryptedBuffer = Buffer.from(base64String, 'base64');
-
+// console.log(req.file, req.body, req.user)
     const uploadStream = cloudinary.uploader.upload_stream(
       { resource_type: 'raw', folder: 'encrypted_files' },
       async (error, result) => {
@@ -55,9 +59,14 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
 
     uploadStream.end(encryptedBuffer);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Server error', error: err });
-  }
+  console.error("❌ File upload error:", err); // full stack trace
+  res.status(500).json({ 
+    message: 'Server error', 
+    error: err.message, 
+    stack: err.stack 
+  });
+}
+
 });
 
 
