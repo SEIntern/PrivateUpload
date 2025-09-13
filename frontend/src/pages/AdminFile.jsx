@@ -169,9 +169,9 @@ export default function AdminFile({ file, token, onClose }) {
         >
           &times;
         </button>
-        <h2 className="text-xl font-bold mb-4">Download & Preview File</h2>
+        <h2 className="text-xl text-black font-bold mb-4">Download & Preview File</h2>
         {error && <div className="mb-2 text-red-500">{error}</div>}
-        <div className="mb-4">{file.original_filename}</div>
+        <div className="mb-4 text-black">{file.original_filename}</div>
         {(() => {
           const ext = file.original_filename.split('.').pop().toLowerCase();
           if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'pdf'].includes(ext)) {
