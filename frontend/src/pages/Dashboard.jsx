@@ -25,7 +25,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchFiles();
-    // eslint-disable-next-line
+    
   }, []);
 
   return (

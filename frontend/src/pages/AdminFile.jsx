@@ -12,7 +12,7 @@ export default function AdminFile({ file, token, onClose }) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [previewing, setPreviewing] = useState(false);
 
-    // console.log("🔑 Admin file encryption key:", file);
+    // console.log("Admin file encryption key:", file);
 
   const handlePreview = async () => {
     setPreviewing(true);
@@ -140,7 +140,7 @@ export default function AdminFile({ file, token, onClose }) {
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = file.original_filename; // 👈 use filename from admin response
+    a.download = file.original_filename; // use filename from admin response
     a.click();
     window.URL.revokeObjectURL(url);
 

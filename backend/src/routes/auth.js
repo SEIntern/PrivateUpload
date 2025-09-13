@@ -25,7 +25,7 @@ router.post("/signup", async (req, res) => {
       email,
       password: hashed,
       role,
-      status: "pending",   // 👈 directly pending
+      status: "pending",   // directly pending
     });
 
     await user.save();
@@ -43,27 +43,27 @@ router.post("/signup", async (req, res) => {
 // PUT /status/:id
 router.put("/status/:id", auth, async (req, res) => {
   try {
-    const { action, managerEmail } = req.body; // 👈 also accept managerEmail
+    const { action, managerEmail } = req.body; // also accept managerEmail
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     if (action === "approve") {
       user.status = "approved";
 
-      // 👇 If user is employee, save managerEmail
+      // If user is employee, save managerEmail
       if (user.role === "user" && managerEmail) {
         user.managerEmail = managerEmail;
       }
 
       await user.save();
     } else if (action === "reject") {
-      // ❌ Delete the user entirely
+      // Delete the user entirely
       await User.findByIdAndDelete(req.params.id);
     } else {
       return res.status(400).json({ message: "Invalid action" });
     }
 
-    // ✉️ Send mail according to action
+    //  Send mail according to action
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -74,14 +74,14 @@ router.put("/status/:id", auth, async (req, res) => {
 
     let subject, text;
     if (action === "approve") {
-      subject = "✅ Your account has been approved";
+      subject = "Your account has been approved";
       text = `Hello,\n\nYour account has been approved. You can now login.${
         user.role === "user" && managerEmail
           ? `\n\nYour assigned manager: ${managerEmail}`
           : ""
       }\n\nRegards,\nAdmin`;
     } else {
-      subject = "❌ Your account has been rejected";
+      subject = " Your account has been rejected";
       text = `Hello,\n\nSorry, your account request has been rejected. Your credentials have been removed from our system.\n\nRegards,\nAdmin`;
     }
 
@@ -118,7 +118,7 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // 🔹 Check approval status
+    // Check approval status
     if (user.status === "pending") {
       return res.status(403).json({ message: "Your account is pending approval." });
     }
@@ -176,12 +176,12 @@ router.post("/admin/create-user", async (req, res) => {
       email,
       password: hashed,
       role,
-      status: "approved", // ✅ Admin created = auto-approved
-      managerEmail: role === "user" ? managerEmail || "" : "", // ✅ only for employees
+      status: "approved", // Admin created = auto-approved
+      managerEmail: role === "user" ? managerEmail || "" : "", // only for employees
     });
     await user.save();
 
-    // ✅ transporter
+    // transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -190,7 +190,7 @@ router.post("/admin/create-user", async (req, res) => {
       },
     });
 
-    // ✅ send email
+    // send email
     await transporter.sendMail({
       from: `"Admin" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -200,7 +200,7 @@ router.post("/admin/create-user", async (req, res) => {
       }\n\nPlease change your password after first login.`,
     });
 
-    console.log("✅ Email sent to", email);
+    console.log("Email sent to", email);
 
     res
       .status(201)

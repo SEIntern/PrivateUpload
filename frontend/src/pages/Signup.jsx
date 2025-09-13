@@ -22,7 +22,7 @@ export default function Signup() {
       });
 
       setSuccess(
-        "✅ Signup request submitted! Please wait for admin approval before login."
+        "Signup request submitted! Please wait for admin approval before login."
       );
       setEmail("");
       setPassword("");

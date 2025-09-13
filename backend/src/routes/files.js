@@ -64,7 +64,7 @@ router.post("/upload", auth, upload.single("file"), async (req, res) => {
 
     uploadStream.end(encryptedBuffer);
   } catch (err) {
-    console.error("❌ File upload error:", err);
+    console.error("File upload error:", err);
     res.status(500).json({
       message: "Server error",
       error: err.message,
@@ -72,10 +72,6 @@ router.post("/upload", auth, upload.single("file"), async (req, res) => {
     });
   }
 });
-
-
-
-
 
 router.put("/status/:id", auth, async (req, res) => {
   try {
@@ -119,20 +115,6 @@ router.put("/status/:id", auth, async (req, res) => {
     return res.status(400).json({ message: "Invalid action" });
   } catch (err) {
     console.error("❌ File status update error:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-});
-
-// Manager ke liye pending files fetch
-router.get("/manager/files", auth, async (req, res) => {
-  try {
-    const files = await File.find({
-      approvedBy: req.user.email, // manager ke email ke hisaab se
-      status: "pending",
-    }).populate("owner", "email");
-
-    res.json(files);
-  } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
@@ -189,11 +171,24 @@ router.get("/manager/users", auth, async (req, res) => {
 
     res.json(users);
   } catch (err) {
-    console.error("❌ Error fetching manager users:", err);
+    console.error("Error fetching manager users:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
+// Manager ke liye pending files fetch
+router.get("/manager/files", auth, async (req, res) => {
+  try {
+    const files = await File.find({
+      approvedBy: req.user.email, // manager ke email ke hisaab se
+      status: "pending",
+    }).populate("owner", "email");
+
+    res.json(files);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
 
 // Get all users (admin only)
 router.get('/admin/users', auth, adminOnly, async (req, res) => {
@@ -235,13 +230,13 @@ router.get('/admin/users/:userId/files', auth, adminOnly, async (req, res) => {
       return {
         ...file.toObject(),
         encryptionKey: keyDoc ? keyDoc.encryptionKey : null,
-        url, // 👈 add signed Cloudinary download URL
+        url, //  add signed Cloudinary download URL
       };
     });
 
     res.json(response);
   } catch (err) {
-    console.error("❌ Error fetching admin files:", err);
+    console.error("Error fetching admin files:", err);
     res.status(500).json({ message: 'Server error', error: err });
   }
 });

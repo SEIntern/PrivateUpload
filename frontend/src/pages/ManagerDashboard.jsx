@@ -4,7 +4,8 @@ import axios from "axios";
 import Adminfile from "./Adminfile";
 import FileUploadModal from "./FileUploadModal";
 import { jwtDecode } from "jwt-decode";
-import { Bell } from "lucide-react"; // 🔔 notification icon
+import { Bell } from "lucide-react"; 
+
 
 export default function ManagerDashboard() {
   const [token] = useState(localStorage.getItem("token") || "");
@@ -41,7 +42,7 @@ export default function ManagerDashboard() {
         const decoded = jwtDecode(token);
         setManagerId(decoded.id);
       } catch (err) {
-        console.error("❌ Invalid token:", err);
+        console.error("Invalid token:", err);
       }
     }
   }, [token]);
@@ -55,7 +56,7 @@ export default function ManagerDashboard() {
       const normalUsers = res.data.filter((u) => u.role === "user");
       setUsers(normalUsers);
     } catch (err) {
-      console.error("❌ Error fetching users:", err.response?.data || err.message);
+      console.error(" Error fetching users:", err.response?.data || err.message);
     }
   };
 
@@ -90,7 +91,7 @@ export default function ManagerDashboard() {
       );
       setManagerFiles(res.data);
     } catch (err) {
-      console.error("❌ Error fetching manager files:", err.response?.data || err.message);
+      console.error(" Error fetching manager files:", err.response?.data || err.message);
       setManagerFiles([]);
     }
   };
@@ -103,7 +104,7 @@ export default function ManagerDashboard() {
       });
       setPendingFiles(res.data);
     } catch (err) {
-      console.error("❌ Error fetching pending files:", err.response?.data || err.message);
+      console.error("Error fetching pending files:", err.response?.data || err.message);
     }
   };
 
@@ -122,7 +123,7 @@ export default function ManagerDashboard() {
       // refresh after action
       fetchPendingFiles();
     } catch (err) {
-      console.error("❌ Error updating file status:", err.response?.data || err.message);
+      console.error("Error updating file status:", err.response?.data || err.message);
     } finally {
       // clear loading for this file
       setActionLoading((prev) => {
@@ -158,7 +159,7 @@ export default function ManagerDashboard() {
           Manager Dashboard
         </h1>
         <div className="flex gap-4 items-center">
-          {/* 🔔 Notification Bell */}
+          {/*  Notification Bell */}
           <div className="relative">
             <button
               onClick={() => setShowRequests(!showRequests)}
@@ -361,7 +362,7 @@ export default function ManagerDashboard() {
                               );
                               setManagerFiles((prev) => prev.filter((f) => f._id !== file._id));
                             } catch (err) {
-                              console.error("❌ Delete error:", err.response?.data || err.message);
+                              console.error(" Delete error:", err.response?.data || err.message);
                               alert("Failed to delete file");
                             }
                           }

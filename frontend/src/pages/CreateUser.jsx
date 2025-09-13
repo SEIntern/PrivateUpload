@@ -6,7 +6,7 @@ export default function CreateUser() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
-  const [managerEmail, setManagerEmail] = useState(""); // 🔹 New state
+  const [managerEmail, setManagerEmail] = useState(""); 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function CreateUser() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setMessage("✅ User created & credentials sent via email!");
+      setMessage("User created & credentials sent via email!");
       setEmail("");
       setPassword("");
       setManagerEmail("");
@@ -34,7 +34,7 @@ export default function CreateUser() {
     } catch (err) {
       console.error("Error creating user:", err.response?.data || err.message);
       setMessage(
-        `❌ ${err.response?.data?.message || "Failed to create user"}`
+        `${err.response?.data?.message || "Failed to create user"}`
       );
     } finally {
       setLoading(false);

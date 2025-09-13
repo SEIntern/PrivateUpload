@@ -17,14 +17,14 @@ export default function PendingRequests() {
             });
             setPendingRequests(res.data.filter((u) => u.status === "pending"));
         } catch (err) {
-            console.error("❌ Error fetching pending requests:", err.response?.data || err.message);
+            console.error("Error fetching pending requests:", err.response?.data || err.message);
         }
     };
 
     // Handle approve/reject
     const handleAction = async (userId, action) => {
         try {
-            setLoadingIds((prev) => [...prev, userId]); // mark loading
+            setLoadingIds((prev) => [...prev, userId]); // mark this user as loading
 
             const res = await axios.put(
                 `http://localhost:5000/api/auth/status/${userId}`,
@@ -43,7 +43,7 @@ export default function PendingRequests() {
             );
             await fetchPending();
         } catch (err) {
-            console.error("❌ Error approving/rejecting:", err.response?.data || err.message);
+            console.error(" Error approving/rejecting:", err.response?.data || err.message);
         } finally {
             setLoadingIds((prev) => prev.filter((id) => id !== userId));
         }

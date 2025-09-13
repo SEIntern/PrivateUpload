@@ -33,7 +33,7 @@ export default function AdminDashboard() {
       setUsers(res.data.filter((u) => u.role === "user" && u.status === "approved"));
       setPendingRequests(res.data.filter((u) => u.status === "pending"));
     } catch (err) {
-      console.error("❌ Error fetching users:", err.response?.data || err.message);
+      console.error(" Error fetching users:", err.response?.data || err.message);
     }
   };
 
@@ -48,7 +48,7 @@ export default function AdminDashboard() {
       // Refresh after approval/rejection
       fetchUsers();
     } catch (err) {
-      console.error("❌ Error approving/rejecting:", err.response?.data || err.message);
+      console.error("Error approving/rejecting:", err.response?.data || err.message);
     }
   };
 
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                         <td className="p-3 border">
                           {new Date(file.createdAt).toLocaleString()}
                         </td>
-                        {/* ✅ Show status */}
+                        {/* Show status */}
                         <td className="p-3 border">
                           <span
                             className={`px-3 py-1 rounded-lg text-sm font-semibold ${

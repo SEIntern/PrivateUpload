@@ -12,7 +12,7 @@ export default function FileDownloadModal({ file, token, onClose }) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [previewing, setPreviewing] = useState(false);
 
-  // ✅ Updated: Get key from API if available (admin), else from localStorage (user)
+  // Get key from API if available (admin), else from localStorage (user)
   const getKey = () => {
     if (file.encryptionKey) return file.encryptionKey; 
     return localStorage.getItem('encryption_key');

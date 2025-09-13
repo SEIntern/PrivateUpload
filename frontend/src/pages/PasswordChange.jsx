@@ -10,7 +10,7 @@ export default function PasswordChange() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
-  const { token } = useAuth(); // <-- IMPORTANT: get token from context
+  const { token } = useAuth(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();

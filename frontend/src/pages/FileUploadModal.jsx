@@ -32,16 +32,16 @@ export default function FileUploadModal({ onClose, token }) {
         const iv = CryptoJS.lib.WordArray.random(16);
         const key = getKey();
 
-        // 🔒 Encrypt file
+        // Encrypt file
         const encrypted = CryptoJS.AES.encrypt(wordArray, CryptoJS.enc.Hex.parse(key), { iv });
         const encryptedBase64 = encrypted.ciphertext.toString(CryptoJS.enc.Base64);
         const encryptedBlob = new Blob([encryptedBase64], { type: 'application/octet-stream' });
 
-        // 📤 Send file, iv, and key to backend
+        // Send file, iv, and key to backend
         const formData = new FormData();
         formData.append('file', encryptedBlob, file.name);
         formData.append('iv', iv.toString(CryptoJS.enc.Hex));
-        formData.append('encryptionKey', key); // 🔑 send to backend
+        formData.append('encryptionKey', key); // key send to backend
 
         await axios.post('http://localhost:5000/api/files/upload', formData, {
           headers: { Authorization: `Bearer ${token}` },
@@ -52,15 +52,15 @@ export default function FileUploadModal({ onClose, token }) {
       };
       reader.readAsArrayBuffer(file);
     } catch (err) {
-      console.error("❌ Upload error:", err);
+      console.error("Upload error:", err);
 
       if (err.response) {
-        console.error("📥 Server responded with:", err.response.data);
-        console.error("🔢 Status code:", err.response.status);
+        console.error("Server responded with:", err.response.data);
+        console.error("Status code:", err.response.status);
       } else if (err.request) {
-        console.error("📡 No response received. Request was:", err.request);
+        console.error("No response received. Request was:", err.request);
       } else {
-        console.error("⚙️ Error setting up request:", err.message);
+        console.error("Error setting up request:", err.message);
       }
 
       setError('Upload failed');

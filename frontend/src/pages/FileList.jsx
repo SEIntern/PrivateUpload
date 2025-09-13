@@ -20,7 +20,7 @@ export default function FileList({ files, token, fetchFiles }) {
     setDeletingId(null);
   };
 
-  // 🎨 small helper to color status
+  // small helper to color status
   const getStatusColor = (status) => {
     switch (status) {
       case 'approved':
@@ -47,7 +47,7 @@ export default function FileList({ files, token, fetchFiles }) {
               Uploaded: {new Date(file.createdAt).toLocaleString()}
             </div>
 
-            {/* 📌 Show Status */}
+            {/* Show Status */}
             <div className={`text-sm ${getStatusColor(file.status)}`}>
               Status: {file.status || 'pending'}
             </div>
