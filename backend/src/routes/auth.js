@@ -198,9 +198,9 @@ router.post("/admin/create-user", async (req, res) => {
       text: `Hello,\n\nYour account has been created and approved.\n\nEmail: ${email}\nPassword: ${password}\nRole: ${role}\n${
         managerEmail ? `Manager: ${managerEmail}\n` : ""
       }\n\nPlease change your password after first login.`,
-    });
+    },1000);
 
-    console.log("Email sent to", email);
+    // console.log("Email sent to", email);
 
     res
       .status(201)

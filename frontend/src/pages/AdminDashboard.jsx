@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Adminfile from "./Adminfile";
+import Adminfile from "./AdminFile";
 import PendingRequests from "./PendingRequests";
 import CreateUser from "./CreateUser";
 
@@ -51,11 +51,20 @@ export default function AdminDashboard() {
   }, [token]);
 
   const handleUserClick = (user) => {
+  if (selectedUser && selectedUser._id === user._id) {
+    // Second click → unselect
+    setSelectedUser(null);
+    setFiles([]);
+    setActiveTab(null); // or keep "dashboard" if you want
+  } else {
+    // First click → select
     setSelectedUser(user);
     setFiles([]);
     setActiveTab("dashboard");
     fetchFiles(user._id);
-  };
+  }
+};
+
 
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
@@ -71,55 +80,74 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-extrabold mb-8">Admin Dashboard</h1>
 
           {/* Accounts Box */}
-          <div className="bg-white/10 rounded-lg p-3 border border-white/20">
-            <h2 className="font-semibold mb-3">Accounts</h2>
+          <div className="bg-white/10 rounded-lg p-3 border border-white/20 max-h-[400px] overflow-y-auto scrollbar-hidden">
+  <h2 className="font-semibold mb-3">Accounts</h2>
 
-            <div className="space-y-3">
-              {/* Managers Dropdown */}
+  <div className="space-y-3">
+    {/* Managers Dropdown */}
+    <details className="bg-white/5 rounded-lg p-2">
+      <summary className="cursor-pointer font-medium text-indigo-200">
+        👔 Managers
+      </summary>
+      <ul className="mt-2 space-y-2 pl-4">
+        {managers.map((manager) => (
+          <li
+            key={manager._id}
+            onClick={() => handleUserClick(manager)}
+            className={`p-2 rounded-lg cursor-pointer transition ${selectedUser?._id === manager._id
+              ? "bg-indigo-500 text-white"
+              : "hover:bg-white/20"
+            }`}
+          >
+            {manager.email}
+          </li>
+        ))}
+      </ul>
+    </details>
+
+    {/* Users Dropdown */}
+    <details className="bg-white/5 rounded-lg p-2">
+      <summary className="cursor-pointer font-medium text-indigo-200">
+        👤 Users
+      </summary>
+      <ul className="mt-2 space-y-2 pl-4">
+        {managers.map((manager) => {
+          const managerUsers = users.filter(
+            (u) => u.managerEmail === manager.email
+          );
+          return (
+            <li key={manager._id} className="mb-2">
               <details className="bg-white/5 rounded-lg p-2">
-                <summary className="cursor-pointer font-medium text-indigo-200">
-                  👔 Managers
+                <summary className="cursor-pointer text-white font-medium">
+                  {manager.email}
                 </summary>
                 <ul className="mt-2 space-y-2 pl-4">
-                  {managers.map((manager) => (
-                    <li
-                      key={manager._id}
-                      onClick={() => handleUserClick(manager)}
-                      className={`p-2 rounded-lg cursor-pointer transition ${
-                        selectedUser?._id === manager._id
+                  {managerUsers.length > 0 ? (
+                    managerUsers.map((user) => (
+                      <li
+                        key={user._id}
+                        onClick={() => handleUserClick(user)}
+                        className={`p-2 rounded-lg cursor-pointer transition ${selectedUser?._id === user._id
                           ? "bg-indigo-500 text-white"
                           : "hover:bg-white/20"
-                      }`}
-                    >
-                      {manager.email}
-                    </li>
-                  ))}
+                        }`}
+                      >
+                        {user.email}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-white/60">No users</li>
+                  )}
                 </ul>
               </details>
+            </li>
+          );
+        })}
+      </ul>
+    </details>
+  </div>
+</div>
 
-              {/* Users Dropdown */}
-              <details className="bg-white/5 rounded-lg p-2">
-                <summary className="cursor-pointer font-medium text-indigo-200">
-                  👤 Users
-                </summary>
-                <ul className="mt-2 space-y-2 pl-4">
-                  {users.map((user) => (
-                    <li
-                      key={user._id}
-                      onClick={() => handleUserClick(user)}
-                      className={`p-2 rounded-lg cursor-pointer transition ${
-                        selectedUser?._id === user._id
-                          ? "bg-indigo-500 text-white"
-                          : "hover:bg-white/20"
-                      }`}
-                    >
-                      {user.email}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            </div>
-          </div>
         </div>
 
         {/* Bottom Section - Buttons */}
@@ -182,13 +210,12 @@ export default function AdminDashboard() {
                         </td>
                         <td className="p-3 border border-white/20">
                           <span
-                            className={`px-3 py-1 rounded-lg text-sm font-semibold ${
-                              file.status === "approved"
+                            className={`px-3 py-1 rounded-lg text-sm font-semibold ${file.status === "approved"
                                 ? "bg-green-500/30 text-green-200"
                                 : file.status === "pending"
-                                ? "bg-yellow-500/30 text-yellow-200"
-                                : "bg-red-500/30 text-red-200"
-                            }`}
+                                  ? "bg-yellow-500/30 text-yellow-200"
+                                  : "bg-red-500/30 text-red-200"
+                              }`}
                           >
                             {file.status}
                           </span>
