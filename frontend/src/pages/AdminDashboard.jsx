@@ -1,25 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Adminfile from "./Adminfile";
+import PendingRequests from "./PendingRequests";
+import CreateUser from "./CreateUser";
 
 export default function AdminDashboard() {
   const [token] = useState(localStorage.getItem("admin_token") || "");
   const [users, setUsers] = useState([]);
   const [managers, setManagers] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-
-  const navigate = useNavigate();
-
-  // Logout handler
-  const handleLogout = () => {
-    localStorage.removeItem("admin_token");
-    navigate("/login");
-  };
+  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard | requests | create
 
   // Fetch all users
   const fetchUsers = async () => {
@@ -28,27 +21,10 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Separate managers, normal users, and pending requests
       setManagers(res.data.filter((u) => u.role === "manager"));
       setUsers(res.data.filter((u) => u.role === "user" && u.status === "approved"));
-      setPendingRequests(res.data.filter((u) => u.status === "pending"));
     } catch (err) {
-      console.error(" Error fetching users:", err.response?.data || err.message);
-    }
-  };
-
-  // Approve / Reject user request
-  const handleApproval = async (userId, action) => {
-    try {
-      await axios.put(
-        `http://localhost:5000/api/auth/status/${userId}`,
-        { action },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      // Refresh after approval/rejection
-      fetchUsers();
-    } catch (err) {
-      console.error("Error approving/rejecting:", err.response?.data || err.message);
+      console.error("Error fetching users:", err.response?.data || err.message);
     }
   };
 
@@ -77,144 +53,150 @@ export default function AdminDashboard() {
   const handleUserClick = (user) => {
     setSelectedUser(user);
     setFiles([]);
+    setActiveTab("dashboard");
     fetchFiles(user._id);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 p-8">
+  const handleLogout = () => {
+    localStorage.removeItem("admin_token");
+    window.location.href = "/login";
+  };
 
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-extrabold text-white drop-shadow-lg">
-          Admin Dashboard
-        </h1>
-        <div className="flex gap-4 items-center">
-          {/* Pending Requests Button */}
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 flex p-6 gap-6">
+      {/* LEFT PANEL */}
+      <div className="w-80 bg-white/10 backdrop-blur-md border border-white/20 text-white p-6 flex flex-col justify-between rounded-2xl shadow-lg">
+        {/* Top Section */}
+        <div>
+          <h1 className="text-2xl font-extrabold mb-8">Admin Dashboard</h1>
+
+          {/* Accounts Box */}
+          <div className="bg-white/10 rounded-lg p-3 border border-white/20">
+            <h2 className="font-semibold mb-3">Accounts</h2>
+
+            <div className="space-y-3">
+              {/* Managers Dropdown */}
+              <details className="bg-white/5 rounded-lg p-2">
+                <summary className="cursor-pointer font-medium text-indigo-200">
+                  👔 Managers
+                </summary>
+                <ul className="mt-2 space-y-2 pl-4">
+                  {managers.map((manager) => (
+                    <li
+                      key={manager._id}
+                      onClick={() => handleUserClick(manager)}
+                      className={`p-2 rounded-lg cursor-pointer transition ${
+                        selectedUser?._id === manager._id
+                          ? "bg-indigo-500 text-white"
+                          : "hover:bg-white/20"
+                      }`}
+                    >
+                      {manager.email}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+
+              {/* Users Dropdown */}
+              <details className="bg-white/5 rounded-lg p-2">
+                <summary className="cursor-pointer font-medium text-indigo-200">
+                  👤 Users
+                </summary>
+                <ul className="mt-2 space-y-2 pl-4">
+                  {users.map((user) => (
+                    <li
+                      key={user._id}
+                      onClick={() => handleUserClick(user)}
+                      className={`p-2 rounded-lg cursor-pointer transition ${
+                        selectedUser?._id === user._id
+                          ? "bg-indigo-500 text-white"
+                          : "hover:bg-white/20"
+                      }`}
+                    >
+                      {user.email}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section - Buttons */}
+        <div className="flex flex-col gap-3 mt-8">
           <button
-            onClick={() => navigate("/pending-requests")}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-xl shadow-lg transition transform hover:scale-105"
+            onClick={() => setActiveTab("requests")}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg shadow transition"
           >
             View Requests
           </button>
-
-          {/* Create User Button */}
           <button
-            onClick={() => navigate("/create-user")}
-            className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-xl shadow-lg transition transform hover:scale-105"
+            onClick={() => setActiveTab("create")}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition"
           >
             + Create User
           </button>
-
-          {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-xl shadow-lg transition transform hover:scale-105"
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow transition"
           >
             Logout
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Users & Managers List */}
-        <div className="col-span-1 bg-white/90 shadow-2xl rounded-2xl p-6 backdrop-blur">
-          <h2 className="text-xl font-bold mb-4 text-purple-700">Accounts</h2>
-
-          {/* Managers Dropdown */}
-          <details className="mb-4">
-            <summary className="cursor-pointer font-semibold text-indigo-600">
-              Managers
-            </summary>
-            <ul className="mt-2">
-              {managers.map((manager) => (
-                <li
-                  key={manager._id}
-                  onClick={() => handleUserClick(manager)}
-                  className={`p-3 mb-2 rounded-lg cursor-pointer transition font-medium ${
-                    selectedUser?._id === manager._id
-                      ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
-                      : "hover:bg-purple-100 text-gray-700"
-                  }`}
-                >
-                  {manager.email}
-                </li>
-              ))}
-            </ul>
-          </details>
-
-          {/* Users Dropdown */}
-          <details>
-            <summary className="cursor-pointer font-semibold text-indigo-600">
-              Users
-            </summary>
-            <ul className="mt-2">
-              {users.map((user) => (
-                <li
-                  key={user._id}
-                  onClick={() => handleUserClick(user)}
-                  className={`p-3 mb-2 rounded-lg cursor-pointer transition font-medium ${
-                    selectedUser?._id === user._id
-                      ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md"
-                      : "hover:bg-purple-100 text-gray-700"
-                  }`}
-                >
-                  {user.email}
-                </li>
-              ))}
-            </ul>
-          </details>
-        </div>
-
-        {/* User Files */}
-        <div className="col-span-2 bg-white/90 shadow-2xl rounded-2xl p-6 backdrop-blur">
-          {selectedUser ? (
+      {/* RIGHT PANEL */}
+      <div className="flex-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-lg text-white">
+        {activeTab === "dashboard" && (
+          selectedUser ? (
             <>
-              <h2 className="text-lg font-semibold mb-4 text-indigo-700">
+              <h2 className="text-lg font-semibold mb-4 text-white/90">
                 Files of{" "}
-                <span className="text-purple-600 font-bold">
+                <span className="text-yellow-300 font-bold">
                   {selectedUser.email}
                 </span>
               </h2>
               {loading ? (
-                <p className="text-gray-500">Loading files...</p>
+                <p className="text-white/70">Loading files...</p>
               ) : files.length > 0 ? (
-                <table className="w-full border rounded-lg overflow-hidden">
+                <table className="w-full border border-white/20 rounded-lg overflow-hidden text-sm">
                   <thead>
                     <tr className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-                      <th className="p-3 border">Filename</th>
-                      <th className="p-3 border">Uploaded At</th>
-                      <th className="p-3 border">Status</th>
-                      <th className="p-3 border">Actions</th>
+                      <th className="p-3 border border-white/20">Filename</th>
+                      <th className="p-3 border border-white/20">Uploaded At</th>
+                      <th className="p-3 border border-white/20">Status</th>
+                      <th className="p-3 border border-white/20">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {files.map((file) => (
                       <tr
                         key={file._id}
-                        className="hover:bg-indigo-50 transition"
+                        className="hover:bg-white/10 transition text-white/90"
                       >
-                        <td className="p-3 border">{file.original_filename}</td>
-                        <td className="p-3 border">
+                        <td className="p-3 border border-white/20">
+                          {file.original_filename}
+                        </td>
+                        <td className="p-3 border border-white/20">
                           {new Date(file.createdAt).toLocaleString()}
                         </td>
-                        {/* Show status */}
-                        <td className="p-3 border">
+                        <td className="p-3 border border-white/20">
                           <span
                             className={`px-3 py-1 rounded-lg text-sm font-semibold ${
                               file.status === "approved"
-                                ? "bg-green-100 text-green-700"
+                                ? "bg-green-500/30 text-green-200"
                                 : file.status === "pending"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-red-100 text-red-700"
+                                ? "bg-yellow-500/30 text-yellow-200"
+                                : "bg-red-500/30 text-red-200"
                             }`}
                           >
                             {file.status}
                           </span>
                         </td>
-                        <td className="p-3 border">
+                        <td className="p-3 border border-white/20">
                           <button
                             onClick={() => setSelectedFile(file)}
-                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg shadow transition transform hover:scale-105"
+                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg shadow transition"
                           >
                             Open
                           </button>
@@ -224,16 +206,21 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               ) : (
-                <p className="text-gray-500">No files found for this user.</p>
+                <p className="text-white/70">No files found for this user.</p>
               )}
             </>
           ) : (
-            <p className="text-purple-700">Select a user to view their files.</p>
-          )}
-        </div>
+            <p className="text-white/80">
+              Select a user or manager to view files.
+            </p>
+          )
+        )}
+
+        {activeTab === "requests" && <PendingRequests token={token} />}
+        {activeTab === "create" && <CreateUser token={token} />}
       </div>
 
-      {/* Modal for decrypt + preview + download */}
+      {/* File Modal */}
       {selectedFile && (
         <Adminfile
           file={selectedFile}

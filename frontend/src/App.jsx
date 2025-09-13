@@ -70,24 +70,7 @@ export default function App() {
               </AdminPrivateRoute>
             }
           />
-          <Route
-            path="/create-user"
-            element={
-              <AdminPrivateRoute>
-                <CreateUser />
-              </AdminPrivateRoute>
-            }
-            
-          />
-          <Route
-            path="/pending-requests"
-            element={
-              <AdminPrivateRoute>
-                <PendingRequests />
-              </AdminPrivateRoute>
-            }
-            
-          />
+          
           {/* Protected manager route */}
           <Route
             path="/manager-dashboard"

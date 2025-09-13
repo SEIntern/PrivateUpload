@@ -1,17 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
-export default function CreateUser() {
+export default function CreateUser({ token }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
-  const [managerEmail, setManagerEmail] = useState(""); 
+  const [managerEmail, setManagerEmail] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [managers, setManagers] = useState([]);
 
-  const token = localStorage.getItem("admin_token");
+  // Fetch managers on mount
+  useEffect(() => {
+    const fetchManagers = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:5000/api/files/admin/users",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setManagers(res.data.filter((u) => u.role === "manager"));
+      } catch (err) {
+        console.error(
+          "Error fetching managers:",
+          err.response?.data || err.message
+        );
+      }
+    };
+
+    fetchManagers();
+  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,116 +44,101 @@ export default function CreateUser() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setMessage("User created & credentials sent via email!");
+      setMessage("✅ User created & credentials sent via email!");
       setEmail("");
       setPassword("");
       setManagerEmail("");
-
-      setTimeout(() => navigate("/admin-dashboard"), 1000);
     } catch (err) {
       console.error("Error creating user:", err.response?.data || err.message);
-      setMessage(
-        `${err.response?.data?.message || "Failed to create user"}`
-      );
+      setMessage(`${err.response?.data?.message || "Failed to create user"}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-700 via-purple-800 to-cyan-500 p-6">
-      <div className="bg-white/90 shadow-2xl rounded-2xl p-8 w-full max-w-md backdrop-blur">
-        <h1 className="text-3xl font-extrabold text-center text-indigo-700 mb-6">
-          Create User
-        </h1>
+    <div className="max-w-md mx-auto bg-white/10 p-6 rounded-2xl shadow-lg">
+      <h1 className="text-2xl font-extrabold text-green-300 mb-6">
+        Create User
+      </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Email */}
+        <div>
+          <label className="block text-sm mb-1">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:outline-none text-black"
+          />
+        </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-1">
-              Temporary Password
-            </label>
-            <input
-              type="text"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-          </div>
+        {/* Password */}
+        <div>
+          <label className="block text-sm mb-1">Temporary Password</label>
+          <input
+            type="text"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:outline-none text-black"
+          />
+        </div>
 
-          {/* Role */}
+        {/* Role */}
+        <div>
+          <label className="block text-sm mb-1">Role</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            required
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none text-black"
+          >
+            <option value="manager">Manager</option>
+            <option value="user">Employee</option>
+          </select>
+        </div>
+
+        {/* Manager Email (if user role) */}
+        {role === "user" && (
           <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Role
-            </label>
+            <label className="block text-sm mb-1">Manager Email</label>
             <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+              value={managerEmail}
+              onChange={(e) => setManagerEmail(e.target.value)}
               required
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none text-black"
             >
-              <option value="manager">Manager</option>
-              <option value="user">Employee</option>
+              <option value="">-- Select Manager --</option>
+              {managers.map((manager) => (
+                <option key={manager._id} value={manager.email}>
+                  {manager.email}
+                </option>
+              ))}
             </select>
           </div>
-
-          {/* Manager Email (only if user role = employee) */}
-          {role === "user" && (
-            <div>
-              <label className="block text-gray-700 font-semibold mb-1">
-                Manager Email
-              </label>
-              <input
-                type="email"
-                value={managerEmail}
-                onChange={(e) => setManagerEmail(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
-            </div>
-          )}
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-2 rounded-lg font-semibold shadow transition transform ${
-              loading
-                ? "bg-indigo-400 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-105"
-            }`}
-          >
-            {loading ? "Creating..." : "Create User"}
-          </button>
-        </form>
-
-        {/* Feedback */}
-        {message && (
-          <p className="mt-4 text-center font-medium text-gray-700">{message}</p>
         )}
 
-        {/* Back to Dashboard */}
+        {/* Submit */}
         <button
-          onClick={() => navigate("/admin-dashboard")}
-          className="mt-6 w-full bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-lg font-semibold shadow transition"
+          type="submit"
+          disabled={loading}
+          className={`w-full py-2 rounded-lg font-semibold shadow transition transform ${
+            loading
+              ? "bg-indigo-400 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-105"
+          }`}
         >
-          ← Back to Dashboard
+          {loading ? "Creating..." : "Create User"}
         </button>
-      </div>
+      </form>
+
+      {/* Feedback */}
+      {message && (
+        <p className="mt-4 text-center font-medium text-yellow-200">{message}</p>
+      )}
     </div>
   );
 }
